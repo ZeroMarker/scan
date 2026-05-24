@@ -38,6 +38,11 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Rename APKs
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
+          mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -46,14 +51,14 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/app-release-unsigned.apk
+            app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
+            app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
           body: |
             ## ${{ steps.version.outputs.VERSION }}
             
             ### APK Files
-            - `app-debug.apk` - Debug version
-            - `app-release-unsigned.apk` - Release version (unsigned)
+            - `Scanner-${{ steps.version.outputs.VERSION }}-debug.apk` - Debug version
+            - `Scanner-${{ steps.version.outputs.VERSION }}-release.apk` - Release version (unsigned)
             
             ### Changes
             See [CHANGELOG](CHANGELOG.md) for details.
