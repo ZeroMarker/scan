@@ -1,0 +1,81 @@
+name: iOS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios.yml'
+  pull_request:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+# The Xcode project uses the Xcode 16 synchronized-folder format (objectVersion 77),
+# so the runner must provide Xcode 16 or newer (macos-latest qualifies).
+
+jobs:
+  build-test:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Find available iPhone simulator
+        id: simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j \
+            | jq -r '.devices | to_entries[] | .value[]? | select(.isAvailable and (.name | startswith("iPhone"))) | .udid' \
+            | head -1)
+          if [ -z "$UDID" ]; then
+            echo "::error::No available iPhone simulator found"
+            exit 1
+          fi
+          echo "Using simulator: $UDID"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build for testing (simulator)
+        run: |
+          xcodebuild build-for-testing \
+            -project Scanner.xcodeproj \
+            -scheme Scanner \
+            -destination 'platform=iOS Simulator,id=${{ env.SIM_UDID }}' \
+            -derivedDataPath .build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run unit tests (ScannerTests)
+        run: |
+          xcodebuild test-without-building \
+            -project Scanner.xcodeproj \
+            -scheme Scanner \
+            -destination 'platform=iOS Simulator,id=${{ env.SIM_UDID }}' \
+            -derivedDataPath .build/DerivedData \
+            -resultBundlePath .build/UnitTests.xcresult \
+            -only-testing:ScannerTests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run UI tests (ScannerUITests)
+        run: |
+          xcodebuild test-without-building \
+            -project Scanner.xcodeproj \
+            -scheme Scanner \
+            -destination 'platform=iOS Simulator,id=${{ env.SIM_UDID }}' \
+            -derivedDataPath .build/DerivedData \
+            -resultBundlePath .build/UITests.xcresult \
+            -only-testing:ScannerUITests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload test results (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-test-results
+          path: ios/.build/*.xcresult
+          if-no-files-found: ignore

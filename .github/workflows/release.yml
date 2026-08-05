@@ -26,13 +26,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x android/gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew -p android assembleDebug
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: ./gradlew -p android assembleRelease
 
       - name: Get version from tag
         id: version
@@ -40,8 +40,8 @@ jobs:
 
       - name: Rename APKs
         run: |
-          mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
-          mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
+          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -51,8 +51,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
-            app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
+            android/app/build/outputs/apk/debug/Scanner-${{ steps.version.outputs.VERSION }}-debug.apk
+            android/app/build/outputs/apk/release/Scanner-${{ steps.version.outputs.VERSION }}-release.apk
           body: |
             ## ${{ steps.version.outputs.VERSION }}
             
@@ -61,6 +61,6 @@ jobs:
             - `Scanner-${{ steps.version.outputs.VERSION }}-release.apk` - Release version (unsigned)
             
             ### Changes
-            See [CHANGELOG](CHANGELOG.md) for details.
+            See [CHANGELOG](../CHANGELOG.md) for details.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
