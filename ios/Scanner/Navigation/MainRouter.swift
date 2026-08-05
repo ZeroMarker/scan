@@ -11,8 +11,11 @@ struct MainRouter: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            MainScreen(onScan: { path.append(.scanner) })
-                .navigationDestination(for: Route.self) { route in
+            MainScreen(
+                onScan: { path.append(.scanner) },
+                viewModel: MainScreenViewModel(repository: DefaultDataRepository())
+            )
+            .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .scanner:
                         ScannerScreen(onBack: { path.removeLast() })

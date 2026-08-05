@@ -8,7 +8,7 @@ struct MainScreen: View {
 
     init(
         onScan: @escaping () -> Void,
-        viewModel: MainScreenViewModel = MainScreenViewModel(repository: DefaultDataRepository())
+        viewModel: MainScreenViewModel
     ) {
         self.onScan = onScan
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -62,5 +62,8 @@ struct MainScreen: View {
 }
 
 #Preview {
-    MainScreen(onScan: {})
+    MainScreen(
+        onScan: {},
+        viewModel: MainScreenViewModel(repository: DefaultDataRepository())
+    )
 }
