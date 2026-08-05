@@ -29,10 +29,10 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Build Debug APK
-        run: ./gradlew -p android assembleDebug
+        run: ./android/gradlew -p android assembleDebug
 
       - name: Build Release APK
-        run: ./gradlew -p android assembleRelease
+        run: ./android/gradlew -p android assembleRelease
 
       - name: Get version from tag
         id: version

@@ -36,14 +36,15 @@ final class BarcodeAnalyzer: NSObject, AVCaptureMetadataOutputObjectsDelegate, O
         from connection: AVCaptureConnection
     ) {
         // Ignore further detections once a result is captured (mirrors the isScanning flag).
-        guard result == nil,
-              let first = metadataObjects
-                  .compactMap { $0 as? AVMetadataMachineReadableCodeObject }
-                  .first(where: { $0.stringValue != nil }),
-              let value = first.stringValue
-        else { return }
+        guard result == nil else { return }
 
-        result = ScanResult(value: value, type: name(for: first.type))
+        let detected = metadataObjects
+            .compactMap { $0 as? AVMetadataMachineReadableCodeObject }
+            .first { $0.stringValue != nil }
+
+        guard let object = detected, let value = object.stringValue else { return }
+
+        result = ScanResult(value: value, type: name(for: object.type))
     }
 
     /// Equivalent of the Android analyzer.resumeScanning().
